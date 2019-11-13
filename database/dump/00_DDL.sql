@@ -150,6 +150,23 @@ BEGIN
 END ;;
 DELIMITER ;
 
+-- Get Products pagination--
+
+DELIMITER ;;
+DROP PROCEDURE IF EXISTS `sp_Product_GetProductPage`;;
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_Product_GetProductPage`(
+  IN  IN_Limit        int,
+  IN  IN_Offset       int,
+  OUT OUT_ReturnValue int
+  )
+BEGIN
+  SET OUT_ReturnValue = 0;
+
+  SELECT Id, Name, Amount, AccountId FROM Product LIMIT IN_Limit OFFSET IN_Offset;
+  SET OUT_ReturnValue = 1;
+END ;;
+DELIMITER ;
+
 -- Get Product --
 
 DELIMITER ;;
