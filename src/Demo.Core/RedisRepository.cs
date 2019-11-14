@@ -18,12 +18,20 @@ namespace Demo.Core
 
         return redis.call('HSET', key, 'Id', id, 'Code', code, 'Password', password, 'IsActive', isactive)";
 
+        private const string LuaTestConvert = @"
+        redis.call('set', KEYS[1], ARGV[1])
+        local val = redis.call('get', KEYS[1])
+        local r = val + tonumber('100') + '10'
+        return r
+        ";
+
         private readonly LuaScriptWorker _worker;
 
         public RedisRepository()
         {
             _worker = new LuaScriptWorker();
             _worker.LuaScripts.Add(nameof(LuaInsertUser), LuaInsertUser);
+            _worker.LuaScripts.Add(nameof(LuaTestConvert), LuaTestConvert);
         }
 
         public async Task<int> InsertUser(UserEntity user)
@@ -32,6 +40,16 @@ namespace Demo.Core
                 nameof(LuaInsertUser),
                 new RedisKey[] {PrefixUser + user.Id},
                 new RedisValue[] {user.Id, user.Code, user.Password, user.IsActive});
+
+            return (int) result;
+        }
+
+        public async Task<int> ConvertTest(string key, int value)
+        {
+            var result = await _worker.ExecuteLuaScript(
+                nameof(LuaTestConvert),
+                new RedisKey[] {key},
+                new RedisValue[] {value});
 
             return (int) result;
         }

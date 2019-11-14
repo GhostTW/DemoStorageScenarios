@@ -19,5 +19,15 @@ namespace Demo.UnitTest
 
             //Assert.AreEqual(1, actualResult);
         }
+        [Test]
+        public void Test_Convert()
+        {
+            var actualResult = 0;
+            var sut = new RedisRepository();
+
+            Assert.DoesNotThrowAsync(async () => actualResult = await sut.ConvertTest("foo", 1));
+
+            Assert.AreEqual(111, actualResult);
+        }
     }
 }
