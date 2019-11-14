@@ -117,6 +117,7 @@ CREATE TABLE `Product` (
   `Amount`        int                NOT NULL,
   `AccountId`     int                NOT NULL,
   PRIMARY KEY (`Id`),
+  FOREIGN KEY(AccountId) references User(Id),
   INDEX IX_Product_AccountId (AccountId)
 );
 
@@ -155,7 +156,7 @@ DELIMITER ;
 DELIMITER ;;
 DROP PROCEDURE IF EXISTS `sp_Product_GetProductPage`;;
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_Product_GetProductPage`(
-  IN  IN_Limit        int,
+  IN  IN_Limit         int,
   IN  IN_Offset       int,
   OUT OUT_ReturnValue int
   )

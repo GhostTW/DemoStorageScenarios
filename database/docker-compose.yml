@@ -8,7 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: pass.123
     volumes:
-      #- "./dump:/docker-entrypoint-initdb.d"
+      - "./dump:/docker-entrypoint-initdb.d"
       - "./my.cnf:/etc/mysql/my.cnf"
     stdin_open: true
     tty: true
