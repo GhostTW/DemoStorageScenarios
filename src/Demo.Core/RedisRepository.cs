@@ -25,6 +25,19 @@ namespace Demo.Core
         return r
         ";
 
+        private const string LuaTestTable = @"
+        local myperson = KEYS[1];
+        local result={};
+        local myresult = redis.call('hkeys', myperson);
+
+        for i,v in ipairs(myresult) do
+            local hval= redis.call('hget', myperson, v);
+            redis.log(redis.LOG_WARNING, hval);
+            table.insert(result,1,v);
+        end
+        return result
+        ";
+
         private readonly LuaScriptWorker _worker;
 
         public RedisRepository()
@@ -32,11 +45,12 @@ namespace Demo.Core
             _worker = new LuaScriptWorker();
             _worker.LuaScripts.Add(nameof(LuaInsertUser), LuaInsertUser);
             _worker.LuaScripts.Add(nameof(LuaTestConvert), LuaTestConvert);
+            _worker.LuaScripts.Add(nameof(LuaTestTable), LuaTestTable);
         }
 
         public async Task<int> InsertUser(UserEntity user)
         {
-            var result = await _worker.ExecuteLuaScript(
+            var result = await _worker.ExecuteLuaScript(    
                 nameof(LuaInsertUser),
                 new RedisKey[] {PrefixUser + user.Id},
                 new RedisValue[] {user.Id, user.Code, user.Password, user.IsActive});
@@ -52,6 +66,15 @@ namespace Demo.Core
                 new RedisValue[] {value});
 
             return (int) result;
+        }
+
+        public async Task<string[]> TestTable(string key)
+        {
+            var result = await _worker.ExecuteLuaScript(
+                nameof(LuaTestTable),
+                new RedisKey[] {key});
+
+            return (string[])result;
         }
     }
 }

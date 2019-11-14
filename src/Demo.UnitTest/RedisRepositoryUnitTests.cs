@@ -19,6 +19,7 @@ namespace Demo.UnitTest
 
             //Assert.AreEqual(1, actualResult);
         }
+        
         [Test]
         public void Test_Convert()
         {
@@ -28,6 +29,17 @@ namespace Demo.UnitTest
             Assert.DoesNotThrowAsync(async () => actualResult = await sut.ConvertTest("foo", 1));
 
             Assert.AreEqual(111, actualResult);
+        }
+        
+        [Test]
+        public void Test_Table()
+        {
+            string[] actualResult = null;
+            var sut = new RedisRepository();
+
+            Assert.DoesNotThrowAsync(async () => actualResult = await sut.TestTable("user:1"));
+
+            Assert.AreEqual(4, actualResult.Length);
         }
     }
 }
