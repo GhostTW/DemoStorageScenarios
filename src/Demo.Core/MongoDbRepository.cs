@@ -7,19 +7,28 @@ namespace Demo.Core
     public class MongoDbRepository
     {
         public readonly MongoClient Connection;
-        private const string ConnectionString = "mongodb://127.0.0.1:27017";
+        private const string ConnectionString = "mongodb://127.0.0.1:27017/TestDB?retryWrites=false";
         private const string DatabaseName = "TestDB";
         private const string CollectionName = "Users";
+        private IClientSessionHandle _session;
 
         public MongoDbRepository()
         {
             Connection = new MongoClient(ConnectionString);
         }
 
+        public void SetSession(IClientSessionHandle session)
+        {
+            _session = session;
+        }
+
         public void InsertUser(UserEntity user)
         {
             var collection = GetUserCollection();
-            collection.InsertOne(user);
+            if(_session !=null)
+                collection.InsertOne(_session, user);
+            else
+                collection.InsertOne(user);
         }
 
         public void InsertUsers(IEnumerable<UserEntity> users)
@@ -41,7 +50,7 @@ namespace Demo.Core
             database.DropCollection(CollectionName);
         }
 
-        private IMongoDatabase GetDatabase() => Connection.GetDatabase(DatabaseName);
+        private IMongoDatabase GetDatabase() => _session != null ? _session.Client.GetDatabase(DatabaseName) : Connection.GetDatabase(DatabaseName);
 
         private IMongoCollection<UserEntity> GetUserCollection() =>
             GetDatabase().GetCollection<UserEntity>(CollectionName);
