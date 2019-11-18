@@ -72,7 +72,8 @@ SELECT @@IN_TRANSACTION;
 
 ## 03 DirtyRead
 
-在 MySqlWorkBench 開啟兩個 Session 連線至資料庫，使用不同的 isolation level
+在 MySqlWorkBench 開啟兩個 Session 連線至資料庫，使用不同的 isolation level 同時操作一樣的資料．
+Session B 更改資料，但在未送出 commit 前被 SessionA 使用 ReadUncommitted 讀到髒資料．
 
 * Step 1 Session A 
 ```sql
@@ -99,7 +100,7 @@ SELECT * FROM User WHERE Code = 'Admin;
 `IsActive: 0`
 
 * Step 4 SessionA
-改變 SessionA 的 isolation level 驗證只能拿到 committed 過的資料．
+改變 SessionA 的 isolation level 驗證該交易只能拿到 committed 過的資料．
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT @@tx_isolation;
@@ -206,7 +207,7 @@ COMMIT;
 ```
 
 ## 05 Phantom Read
-當兩個交易進行時，Ｂ交易對資料做新增或刪除時，Ａ交易會取到髒資料．
+當兩個交易進行時，Ｂ交易對資料做新增或刪除時，Ａ交易不會知道有關新增刪除的資料．
 
 * Step 1 SessionA
 原始資料有三筆
