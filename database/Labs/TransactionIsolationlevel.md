@@ -74,7 +74,7 @@ SELECT @@IN_TRANSACTION;
 
 在 MySqlWorkBench 開啟兩個 Session 連線至資料庫，使用不同的 isolation level
 
-### Step 1 Session A 
+* Step 1 Session A 
 ```sql
 # step 1
 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -84,21 +84,21 @@ SELECT * FROM User;
 ![IsolationLevel](images/ReadUncommitted.png)
 ![DefaultUsers](images/DefaultUsers.png)
 
-### Step 2 SessionB
+* Step 2 SessionB
 建立一個 transaction 但不結束，觀察另一個 session 的使用狀況．
 ```sql
 START TRANSACTION;
 UPDATE User SET IsActive = 0 WHERE Code = 'Admin';
 ```
 
-### Step 3 SessionA 
+* Step 3 SessionA 
 讀取到尚未 commit 的資料.
 ```sql
 SELECT * FROM User WHERE Code = 'Admin;
 ```
 `IsActive: 0`
 
-### Step 4 SessionA
+* Step 4 SessionA
 改變 SessionA 的 isolation level 驗證只能拿到 committed 過的資料．
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
@@ -107,24 +107,24 @@ SELECT * FROM User WHERE Code = 'Admin;
 ```
 `IsActive: 1`
 
-### Step 5 SessionB
+* Step 5 SessionB
 將 transaction commit 送出
 ```sql
 COMMIT;
 ```
 
-### Step 6 SessionA get committed data.
+* Step 6 SessionA get committed data.
 SessionA 會取得 commit 後的資料．
 ```sql
 SELECT * FROM User WHERE Code = 'Admin;
 ```
 `IsActive: 0`
 
-## NonRepeatable Read
+## 04 NonRepeatable Read
 
 當兩個交易同時發生，交易 A 讀取完值後該值被交易 B 更改掉，但交易 A 仍未結束，會導致第二次讀取同一個值是已被交易 B 更改的．當資料前後不一致時，可能會造成邏輯判斷的錯誤．
 
-### Step 1 SessionA
+* Step 1 SessionA
 
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
@@ -134,7 +134,7 @@ SELECT * FROM User;
 ```
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
 
-### Step 2 SessionB
+* Step 2 SessionB
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '0' WHERE Code = 'Test001';
@@ -142,7 +142,7 @@ COMMIT;
 ```
 `Password: 0`
 
-### Step 3 SessionA
+* Step 3 SessionA
 更新時與第一次不一樣的值，結果仍是 SessionB 改的 0
 ```sql
 SELECT * FROM User;
@@ -153,7 +153,7 @@ commit 前第二次讀取會取到被更改的值．
 `Password: 0`
 `Password: 0`
 
-### Step 4 SessionA
+* Step 4 SessionA
 使用 REPEATABLE READ 防止此情況發生
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
@@ -164,7 +164,7 @@ SELECT * FROM User;
 ```
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
 
-### Step 5 SessionB
+* Step 5 SessionB
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '1' WHERE Code = 'Test001';
@@ -173,7 +173,7 @@ SELECT * FROM User;
 ```
 `Password: 1`
 
-### Step 6 SessionA
+* Step 6 SessionA
 ```sql
 SELECT * FROM User;、
 COMMIT;
@@ -184,7 +184,7 @@ commit 前第二次讀取會取到跟第一次一樣的值．
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
 `Password: 1`
 
-### Step 7 SessionA
+* Step 7 SessionA
 使用 `lock in share mode` 讓 SessionB 等待
 
 ```sql
@@ -193,22 +193,22 @@ START TRANSACTION;
 SELECT * FROM User LOCK IN SHARE MODE;
 ```
 
-### Step 8 SessionB
+* Step 8 SessionB
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '1' WHERE Code = 'Test001';
 COMMIT;
 ```
 
-### Step 9 SessionA
+* Step 9 SessionA
 ```sql
 COMMIT;
 ```
 
-## Phantom Read
+## 05 Phantom Read
 當兩個交易進行時，Ｂ交易對資料做新增或刪除時，Ａ交易會取到髒資料．
 
-### Step 1 SessionA
+* Step 1 SessionA
 原始資料有三筆
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
@@ -219,7 +219,7 @@ START TRANSACTION;
 SELECT * FROM User;
 ```
 
-### Step 2 SessionB
+* Step 2 SessionB
 新增一筆資料
 ```sql
 START TRANSACTION;
@@ -227,14 +227,14 @@ INSERT INTO User VALUES(4,'testP0', '1E867FA1A3A64AB5E1EE21BD76F05912', 1);
 COMMIT;
 ```
 
-### Step 3 SessionA
+* Step 3 SessionA
 仍是取到三筆資料
 ```sql
 SELECT * FROM User;
 COMMIT;
 ```
 
-### Step 4 SessionA
+* Step 4 SessionA
 使用 Serialiazable
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
@@ -243,7 +243,7 @@ START TRANSACTION;
 SELECT * FROM User;
 ```
 
-### Step 5 SessionB
+* Step 5 SessionB
 新增一筆資料，但因為是 Serializable 進入等待．
 ```sql
 START TRANSACTION;
@@ -252,7 +252,7 @@ COMMIT;
 SELECT * FROM User;
 ```
 
-### Step 6 SessionA
+* Step 6 SessionA
 結束 transaction 後，交易 B 才將資料新增進去．
 ```sql
 COMMIT;
