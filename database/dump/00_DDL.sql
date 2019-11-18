@@ -31,6 +31,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_User_CreateUser`(
 BEGIN
   SET OUT_ReturnValue = 0;
   INSERT INTO User (Code, Password, IsActive) values (IN_Code, IN_Password, IN_IsActive);
+  SELECT LAST_INSERT_ID() as ID;
   SET OUT_ReturnValue = 1;
 END ;;
 DELIMITER ;
@@ -84,11 +85,13 @@ DELIMITER ;;
 DROP PROCEDURE IF EXISTS `sp_User_UpdateUser`;;
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_User_UpdateUser`(
   IN  IN_Id    int,
+  IN  IN_Password varchar(70),
+  IN  IN_IsActive    bit,
   OUT OUT_ReturnValue int
 )
 BEGIN
     SET OUT_ReturnValue = 0;
-    UPDATE User SET IsActive = IN_IsActive WHERE Id = IN_Id;
+    UPDATE User SET PASSWORD = IN_Password, IsActive = IN_IsActive WHERE Id = IN_Id;
     SET OUT_ReturnValue = 1;
   END ;;
 DELIMITER ;

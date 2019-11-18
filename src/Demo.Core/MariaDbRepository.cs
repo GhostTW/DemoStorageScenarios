@@ -46,10 +46,101 @@ namespace Demo.Core
             }
         }
 
+        public UserEntity InsertUser(UserEntity user)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var command = new MySqlCommand(StoredProcedures.SpUserCreateUser, connection))
+                {
+                    var parameters = new List<MySqlParameter>();
+                    var parameterOut = new MySqlParameter("@OUT_ReturnValue", MySqlDbType.Int32)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    var parameterCode = new MySqlParameter("@IN_Code", MySqlDbType.String)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value =  user.Code
+                    };
+                    var parameterPassword = new MySqlParameter("@IN_Password", MySqlDbType.String)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value = user.Password
+                    };
+                    var parameterIsActive = new MySqlParameter("@IN_IsActive", MySqlDbType.Bit)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value = user.IsActive
+                    };
+                    parameters.Add(parameterOut);
+                    parameters.Add(parameterCode);
+                    parameters.Add(parameterPassword);
+                    parameters.Add(parameterIsActive);
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddRange(parameters.ToArray());
+                    var reader = command.ExecuteReader();
+                    
+                    if (!reader.HasRows) return null;
+
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32("Id");
+                        user.Id = id;
+
+                        break;
+                    }
+
+                    return user;
+                }
+            }
+        }
+
+        public void UpdateUser(UserEntity user)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var command = new MySqlCommand(StoredProcedures.SpUserUpdateUser, connection))
+                {
+                    var parameters = new List<MySqlParameter>();
+                    var parameterOut = new MySqlParameter("@OUT_ReturnValue", MySqlDbType.Int32)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    var parameterId = new MySqlParameter("@IN_Id", MySqlDbType.String)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value =  user.Id
+                    };
+                    var parameterPassword = new MySqlParameter("@IN_Password", MySqlDbType.String)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value =  user.Password
+                    };
+                    var parameterIsActive = new MySqlParameter("@IN_IsActive", MySqlDbType.Bit)
+                    {
+                        Direction = ParameterDirection.Input,
+                        Value = user.IsActive
+                    };
+                    parameters.Add(parameterOut);
+                    parameters.Add(parameterId);
+                    parameters.Add(parameterPassword);
+                    parameters.Add(parameterIsActive);
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddRange(parameters.ToArray());
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+        
         private struct StoredProcedures
         {
             public const string SpUserCreateUser = "sp_User_CreateUser";
             public const string SpUserGetUsers = "sp_User_GetUsers";
+            public const string SpUserUpdateUser = "sp_User_UpdateUser";
         }
     }
 }
