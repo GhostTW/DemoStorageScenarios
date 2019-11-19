@@ -13,7 +13,7 @@ namespace Demo.UnitTest
         }
 
         [Test]
-        public void GetUser_Should_Correct()
+        public void GetUserShouldCorrect()
         {
             var sut = new MariaDbRepository();
 
@@ -26,7 +26,7 @@ namespace Demo.UnitTest
         }
 
         [Test]
-        public void CreateUser_Should_Correct()
+        public void CreateUserShouldCorrect()
         {
             var newUser = new UserEntity {Code = "FromUnitTest", Password = "pass.123", IsActive = false};
             

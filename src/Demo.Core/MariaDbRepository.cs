@@ -8,12 +8,12 @@ namespace Demo.Core
 {
     public class MariaDbRepository
     {
-        private readonly string _connectionString =
+        private const string ConnectionString =
             "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
 
         public IEnumerable<UserEntity> GetUsers()
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -48,7 +48,7 @@ namespace Demo.Core
 
         public UserEntity InsertUser(UserEntity user)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -99,7 +99,7 @@ namespace Demo.Core
 
         public void UpdateUser(UserEntity user)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(ConnectionString))
             {
                 connection.Open();
 
