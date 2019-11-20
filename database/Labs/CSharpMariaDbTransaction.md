@@ -38,20 +38,24 @@ public IEnumerable<UserEntity> GetUsers()
 
             command.CommandType = CommandType.StoredProcedure;
             command.Parameters.Add(parameter);
-            var reader = command.ExecuteReader();
-
-            if (!reader.HasRows) return Enumerable.Empty<UserEntity>();
-
             var result = new List<UserEntity>();
-            while (reader.Read())
+            using(var reader = command.ExecuteReader())
             {
-                var id = reader.GetInt32("Id");
-                var code = reader.GetString("Code");
-                var password = reader.GetString("Password");
-                var isActive = reader.GetBoolean("IsActive");
-                var user = new UserEntity {Id = id, Code = code, Password = password, IsActive = isActive};
-                result.Add(user);
+                if (!reader.HasRows) return Enumerable.Empty<UserEntity>();
+
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32("Id");
+                    var code = reader.GetString("Code");
+                    var password = reader.GetString("Password");
+                    var isActive = reader.GetBoolean("IsActive");
+                    var user = new UserEntity {Id = id, Code = code, Password = password, IsActive = isActive};
+                    result.Add(user);
+                }
             }
+
+            if ((int)parameter.Value == 0) // reader 要關閉才能取得 output parameter.
+                throw new Exception("failed to get users from mariadb.");
 
             return result;
         }

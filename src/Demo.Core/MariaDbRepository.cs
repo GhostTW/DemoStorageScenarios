@@ -34,20 +34,24 @@ namespace Demo.Core
 
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add(parameter);
-                    var reader = command.ExecuteReader();
-
-                    if (!reader.HasRows) return Enumerable.Empty<UserEntity>();
-
                     var result = new List<UserEntity>();
-                    while (reader.Read())
+                    using (var reader = command.ExecuteReader())
                     {
-                        var id = reader.GetInt32("Id");
-                        var code = reader.GetString("Code");
-                        var password = reader.GetString("Password");
-                        var isActive = reader.GetBoolean("IsActive");
-                        var user = new UserEntity {Id = id, Code = code, Password = password, IsActive = isActive};
-                        result.Add(user);
+                        if (!reader.HasRows) return Enumerable.Empty<UserEntity>();
+
+                        while (reader.Read())
+                        {
+                            var id = reader.GetInt32("Id");
+                            var code = reader.GetString("Code");
+                            var password = reader.GetString("Password");
+                            var isActive = reader.GetBoolean("IsActive");
+                            var user = new UserEntity {Id = id, Code = code, Password = password, IsActive = isActive};
+                            result.Add(user);
+                        }
                     }
+
+                    if ((int)parameter.Value == 0) // output parameters only be populated after the reader is closed.
+                        throw new Exception("failed to get users from mariadb.");
 
                     return result;
                 }
@@ -100,16 +104,17 @@ namespace Demo.Core
                     parameters.Add(parameterIsActive);
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddRange(parameters.ToArray());
-                    var reader = command.ExecuteReader();
-                    
-                    if (!reader.HasRows) return null;
-
-                    while (reader.Read())
+                    using (var reader = command.ExecuteReader())
                     {
-                        var id = reader.GetInt32("Id");
-                        user.Id = id;
+                        if (!reader.HasRows) return null;
 
-                        break;
+                        while (reader.Read())
+                        {
+                            var id = reader.GetInt32("Id");
+                            user.Id = id;
+
+                            break;
+                        }
                     }
 
                     return user;
@@ -193,19 +198,21 @@ namespace Demo.Core
 
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.Add(parameter);
-                    var reader = command.ExecuteReader();
-
-                    if (!reader.HasRows) return Enumerable.Empty<ProductEntity>();
-
                     var result = new List<ProductEntity>();
-                    while (reader.Read())
+                    using (var reader = command.ExecuteReader())
                     {
-                        var id = reader.GetInt32("Id");
-                        var name = reader.GetString("Name");
-                        var amount = reader.GetInt32("Amount");
-                        var accountId = reader.GetInt32("AccountId");
-                        var product = new ProductEntity {Id = id, Name = name, Amount = amount, AccountId = accountId};
-                        result.Add(product);
+                        if (!reader.HasRows) return Enumerable.Empty<ProductEntity>();
+
+                        while (reader.Read())
+                        {
+                            var id = reader.GetInt32("Id");
+                            var name = reader.GetString("Name");
+                            var amount = reader.GetInt32("Amount");
+                            var accountId = reader.GetInt32("AccountId");
+                            var product = new ProductEntity
+                                {Id = id, Name = name, Amount = amount, AccountId = accountId};
+                            result.Add(product);
+                        }
                     }
 
                     return result;
@@ -259,16 +266,18 @@ namespace Demo.Core
                     parameters.Add(parameterIsActive);
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddRange(parameters.ToArray());
-                    var reader = command.ExecuteReader();
-                    
-                    if (!reader.HasRows) return null;
-
-                    while (reader.Read())
+                    using (var reader = command.ExecuteReader())
                     {
-                        var id = reader.GetInt32("Id");
-                        product.Id = id;
 
-                        break;
+                        if (!reader.HasRows) return null;
+
+                        while (reader.Read())
+                        {
+                            var id = reader.GetInt32("Id");
+                            product.Id = id;
+
+                            break;
+                        }
                     }
 
                     return product;
