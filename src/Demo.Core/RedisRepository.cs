@@ -43,14 +43,15 @@ namespace Demo.Core
         public RedisRepository()
         {
             _worker = new LuaScriptWorker();
-            _worker.LuaScripts.Add(nameof(LuaInsertUser), LuaInsertUser);
-            _worker.LuaScripts.Add(nameof(LuaTestConvert), LuaTestConvert);
-            _worker.LuaScripts.Add(nameof(LuaTestTable), LuaTestTable);
+            var workerLuaScripts = _worker.LuaScripts;
+            workerLuaScripts.Add(nameof(LuaInsertUser), LuaInsertUser);
+            workerLuaScripts.Add(nameof(LuaTestConvert), LuaTestConvert);
+            workerLuaScripts.Add(nameof(LuaTestTable), LuaTestTable);
         }
 
         public async Task<int> InsertUser(UserEntity user)
         {
-            var result = await _worker.ExecuteLuaScript(    
+            var result = await _worker.ExecuteLuaScript(
                 nameof(LuaInsertUser),
                 new RedisKey[] {PrefixUser + user.Id},
                 new RedisValue[] {user.Id, user.Code, user.Password, user.IsActive});
@@ -60,8 +61,7 @@ namespace Demo.Core
 
         public async Task<int> ConvertTest(string key, int value)
         {
-            var result = await _worker.ExecuteLuaScript(
-                nameof(LuaTestConvert),
+            var result = await _worker.ExecuteLuaScript(nameof(LuaTestConvert),
                 new RedisKey[] {key},
                 new RedisValue[] {value});
 
@@ -74,7 +74,7 @@ namespace Demo.Core
                 nameof(LuaTestTable),
                 new RedisKey[] {key});
 
-            return (string[])result;
+            return (string[]) result;
         }
     }
 }

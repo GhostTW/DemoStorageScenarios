@@ -138,6 +138,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_Product_CreateProduct`(
 BEGIN
   SET OUT_ReturnValue = 0;
   INSERT INTO Product (Name, Amount, AccountId) values (IN_Name, IN_Amount, IN_AccountId);
+  SELECT LAST_INSERT_ID() as ID;
   SET OUT_ReturnValue = 1;
 END ;;
 DELIMITER ;
