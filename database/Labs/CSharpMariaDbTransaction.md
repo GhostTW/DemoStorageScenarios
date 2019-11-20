@@ -170,7 +170,7 @@ public void InsertUserAndProductRollback()
 
 ## TranasctionScope NestedScope
 
-Transaction Scope 支援巢狀 Scope，以下範例為兩層 Scope 內層 Scope 失敗，外層本來成功 commit 也應該跟著失敗．
+Transaction Scope 支援巢狀 Scope，以下範例為兩層 Scope 內層 Scope 失敗，外層本來成功但因為內層失敗也跟著失敗．
 
 ```C#
 [Test]
