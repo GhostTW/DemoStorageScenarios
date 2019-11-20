@@ -167,3 +167,55 @@ public void InsertUserAndProductRollback()
     Assert.AreEqual(originProductCount, finalProductCount);
 }
 ```
+
+## TranasctionScope NestedScope
+
+Transaction Scope 支援巢狀 Scope，以下範例為兩層 Scope 內層 Scope 失敗，外層本來成功 commit 也應該跟著失敗．
+
+```C#
+[Test]
+public void NestedScopeInnerScopeRollbackShouldRollback()
+{
+    // arrange
+    var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
+    var expectedPassword = "pass.123";
+    var newUser2 = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
+    var newUser3 = new UserEntity {Id = 3, Password = expectedPassword, IsActive = true};
+    var finalPasswordUser2 = string.Empty;
+    var finalPasswordUser3 = string.Empty;
+
+    // action
+    try
+    {
+        using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+            new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
+            TransactionScopeAsyncFlowOption.Enabled))
+        {
+            var userRepoA = new MariaDbRepository();
+            userRepoA.UpdateUser(newUser2);
+
+            using (var unused = new TransactionScope(TransactionScopeOption.Required))
+            {
+                var userRepoB = new MariaDbRepository();
+                userRepoB.UpdateUser(newUser3);
+
+                //unused.Complete();
+            }
+
+            transactionScope.Complete();
+        }
+    }
+    catch (TransactionAbortedException)
+    {
+        Console.WriteLine("transaction rollback!");
+    }
+    var repo = new MariaDbRepository();
+    var users = repo.GetUsers().Where(u => u.Id == 2 || u.Id == 3).ToArray();
+
+    finalPasswordUser2 = users.FirstOrDefault(u => u.Id == 2)?.Password;
+    finalPasswordUser3 = users.FirstOrDefault(u => u.Id == 3)?.Password;
+    // assert
+    Assert.AreEqual(originPassword, finalPasswordUser2);
+    Assert.AreEqual(originPassword, finalPasswordUser3);
+}
+```

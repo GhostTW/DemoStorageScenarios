@@ -12,13 +12,13 @@ namespace Demo.Core
         private MySqlConnection _connection;
         private MySqlTransaction _transaction;
 
-        private const string ConnectionString =
-            "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
+        private readonly string _connectionString;
 
-        public MariaDbRepository(MySqlConnection mySqlConnection = null, MySqlTransaction transaction = null)
+        public MariaDbRepository(MySqlConnection mySqlConnection = null, MySqlTransaction transaction = null, string connectionString = null)
         {
             _connection = mySqlConnection;
             _transaction = transaction;
+            _connectionString = connectionString ?? "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
         }
         
         public IEnumerable<UserEntity> GetUsers()
@@ -55,7 +55,7 @@ namespace Demo.Core
             
             if(_connection == null)
             {
-                using (var connection = new MySqlConnection(ConnectionString))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
                     return Execute(connection);
@@ -118,7 +118,7 @@ namespace Demo.Core
             
             if(_connection == null)
             {
-                using (var connection = new MySqlConnection(ConnectionString))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
                     return Execute(connection);
@@ -168,7 +168,7 @@ namespace Demo.Core
             
             if(_connection == null)
             {
-                using (var connection = new MySqlConnection(ConnectionString))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
                     Execute(connection);
@@ -214,7 +214,7 @@ namespace Demo.Core
             
             if(_connection == null)
             {
-                using (var connection = new MySqlConnection(ConnectionString))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
                     return Execute(connection);
@@ -277,7 +277,7 @@ namespace Demo.Core
             
             if(_connection == null)
             {
-                using (var connection = new MySqlConnection(ConnectionString))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
                     connection.Open();
                     return Execute(connection);

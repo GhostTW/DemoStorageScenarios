@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,9 @@ namespace Demo.UnitTest
     {
         private const string ConnectionString =
             "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
+
+        private const string ConnectionString1 =
+            "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB1;charset=utf8;";
 
         [SetUp]
         public void Setup()
@@ -53,7 +57,7 @@ namespace Demo.UnitTest
         public void UpdateUserShouldCorrect()
         {
             // arrange
-            var newUser = new UserEntity {Id = 4, Password = "pass.123", IsActive = true};
+            var newUser = new UserEntity {Id = 3, Password = "pass.123", IsActive = true};
 
             // action
             var sut = new MariaDbRepository();
@@ -188,7 +192,7 @@ namespace Demo.UnitTest
 
             // action
             var waiterUpdate = new AutoResetEvent(false);
-            
+
             Task.Factory.StartNew(() =>
             {
                 waiterUpdate.WaitOne();
@@ -202,7 +206,7 @@ namespace Demo.UnitTest
 
                 waiterUpdate.Set();
             });
-            
+
             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
                 new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
                 TransactionScopeAsyncFlowOption.Enabled))
@@ -223,8 +227,7 @@ namespace Demo.UnitTest
         }
 
         [Test]
-        [Ignore("todo")]
-        public void UpdateUserReadDirtyDataWithNestedScope()
+        public void ReadDirtyDataWithNestedScope()
         {
             // arrange
             var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
@@ -241,7 +244,8 @@ namespace Demo.UnitTest
                 var userRepoA = new MariaDbRepository();
                 userRepoA.UpdateUser(newUser);
 
-                using (var suppressedScope = new TransactionScope(TransactionScopeOption.Suppress,
+                using (var suppressedScope = new TransactionScope(
+                    TransactionScopeOption.RequiresNew, // can't use Suppress or Required
                     new TransactionOptions {IsolationLevel = IsolationLevel.ReadUncommitted}))
                 {
                     var userRepoB = new MariaDbRepository();
@@ -259,7 +263,53 @@ namespace Demo.UnitTest
         }
 
         [Test]
-        public void InsertUserAndProductRollback()
+        public void NestedScopeInnerScopeRollbackShouldRollback()
+        {
+            // arrange
+            var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
+            var expectedPassword = "pass.123";
+            var newUser2 = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
+            var newUser3 = new UserEntity {Id = 3, Password = expectedPassword, IsActive = true};
+            var finalPasswordUser2 = string.Empty;
+            var finalPasswordUser3 = string.Empty;
+
+            // action
+            try
+            {
+                using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
+                    TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var userRepoA = new MariaDbRepository();
+                    userRepoA.UpdateUser(newUser2);
+
+                    using (var unused = new TransactionScope(TransactionScopeOption.Required))
+                    {
+                        var userRepoB = new MariaDbRepository();
+                        userRepoB.UpdateUser(newUser3);
+
+                        //unused.Complete();
+                    }
+
+                    transactionScope.Complete();
+                }
+            }
+            catch (TransactionAbortedException)
+            {
+                Console.WriteLine("transaction rollback!");
+            }
+            var repo = new MariaDbRepository();
+            var users = repo.GetUsers().Where(u => u.Id == 2 || u.Id == 3).ToArray();
+
+            finalPasswordUser2 = users.FirstOrDefault(u => u.Id == 2)?.Password;
+            finalPasswordUser3 = users.FirstOrDefault(u => u.Id == 3)?.Password;
+            // assert
+            Assert.AreEqual(originPassword, finalPasswordUser2);
+            Assert.AreEqual(originPassword, finalPasswordUser3);
+        }
+
+        [Test]
+        public void InsertUserAndProductRollbackInTransactionScope()
         {
             // arrange
             var newUser = new UserEntity {Code = "UnitTest_Scope", Password = "pass.123", IsActive = false};
