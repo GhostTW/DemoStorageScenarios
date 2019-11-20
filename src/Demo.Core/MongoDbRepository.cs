@@ -6,14 +6,14 @@ namespace Demo.Core
 {
     public class MongoDbRepository
     {
-        public readonly MongoClient Connection;
+        private readonly MongoClient _connection;
         private const string ConnectionString = "mongodb://127.0.0.1:27017";
         private const string DatabaseName = "TestDB";
         private const string CollectionName = "Users";
 
         public MongoDbRepository()
         {
-            Connection = new MongoClient(ConnectionString);
+            _connection = new MongoClient(ConnectionString);
         }
 
         public void InsertUser(UserEntity user)
@@ -41,7 +41,7 @@ namespace Demo.Core
             database.DropCollection(CollectionName);
         }
 
-        private IMongoDatabase GetDatabase() => Connection.GetDatabase(DatabaseName);
+        private IMongoDatabase GetDatabase() => _connection.GetDatabase(DatabaseName);
 
         private IMongoCollection<UserEntity> GetUserCollection() =>
             GetDatabase().GetCollection<UserEntity>(CollectionName);

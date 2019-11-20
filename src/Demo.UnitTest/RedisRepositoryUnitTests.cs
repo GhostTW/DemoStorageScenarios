@@ -9,13 +9,12 @@ namespace Demo.UnitTest
         [Test]
         public void InsertUserShouldCorrect()
         {
-            var actualResult = 0;
             var user = new UserEntity
                 {Id = 1, Code = "Admin", Password = "pass.123", IsActive = true};
 
             var sut = new RedisRepository();
 
-            Assert.DoesNotThrowAsync(async () => actualResult = await sut.InsertUser(user));
+            Assert.DoesNotThrowAsync(async () => await sut.InsertUser(user));
         }
         
         [Test]

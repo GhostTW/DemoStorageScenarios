@@ -29,7 +29,7 @@ namespace Demo.UnitTest
         [Test]
         public void InsertUsersShouldSuccess()
         {
-            var users = new UserEntity[]
+            var users = new[]
             {
                 new UserEntity {Id = 2, Code = "Test2", Password = "pass.123", IsActive = true},
                 new UserEntity{Id = 3, Code = "Test3", Password = "pass.123", IsActive = true}

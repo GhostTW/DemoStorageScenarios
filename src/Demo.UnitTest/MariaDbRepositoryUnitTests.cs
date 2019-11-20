@@ -15,14 +15,6 @@ namespace Demo.UnitTest
         private const string ConnectionString =
             "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
 
-        private const string ConnectionString1 =
-            "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB1;charset=utf8;";
-
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void GetUserShouldCorrect()
         {
@@ -107,7 +99,7 @@ namespace Demo.UnitTest
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var sut = new MariaDbRepository(connection, transaction);
+                    var sut = new MariaDbRepository(connection);
 
                     var result = sut.GetUsers();
                     firstUser = result.FirstOrDefault();
@@ -126,7 +118,7 @@ namespace Demo.UnitTest
             // arrange
             var newUser = new UserEntity {Code = "FromUnitTest", Password = "pass.123", IsActive = false};
             UserEntity insertedUser;
-            int originUserCount = 0, tempUserCount = 0, finalUserCount = 0;
+            int originUserCount, tempUserCount, finalUserCount;
 
             // action
             using (var connection = new MySqlConnection(ConnectionString))
@@ -134,7 +126,7 @@ namespace Demo.UnitTest
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var sut = new MariaDbRepository(connection, transaction);
+                    var sut = new MariaDbRepository(connection);
                     originUserCount = sut.GetUsers().Count();
                     insertedUser = sut.CreateUser(newUser);
                     tempUserCount = sut.GetUsers().Count();
@@ -157,7 +149,7 @@ namespace Demo.UnitTest
             var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
             var expectedPassword = "pass.123";
             var newUser = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
-            UserEntity originUser = null, tempUser = null, finalUser = null;
+            UserEntity originUser, tempUser, finalUser;
 
             // action
             using (var connection = new MySqlConnection(ConnectionString))
@@ -165,7 +157,7 @@ namespace Demo.UnitTest
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var sut = new MariaDbRepository(connection, transaction);
+                    var sut = new MariaDbRepository(connection);
                     originUser = sut.GetUsers().FirstOrDefault(u => u.Id == newUser.Id);
                     Assert.DoesNotThrow(() => sut.UpdateUser(newUser));
                     tempUser = sut.GetUsers().FirstOrDefault(u => u.Id == newUser.Id);
@@ -175,6 +167,9 @@ namespace Demo.UnitTest
             }
 
             // assert
+            Assert.NotNull(originUser);
+            Assert.NotNull(tempUser);
+            Assert.NotNull(finalUser);
             Assert.AreEqual(originPassword, originUser.Password);
             Assert.AreEqual(expectedPassword, tempUser.Password);
             Assert.AreEqual(originUser.Password, finalUser.Password);
@@ -188,7 +183,7 @@ namespace Demo.UnitTest
             var expectedPassword = "pass.123";
             var newUser = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
             var dirtyPassword = string.Empty;
-            var finalPassword = string.Empty;
+            string finalPassword;
 
             // action
             var waiterUpdate = new AutoResetEvent(false);
@@ -233,8 +228,8 @@ namespace Demo.UnitTest
             var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
             var expectedPassword = "pass.123";
             var newUser = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
-            var dirtyPassword = string.Empty;
-            var finalPassword = string.Empty;
+            string dirtyPassword;
+            string finalPassword;
 
             // action
             using (var transactionScope = new TransactionScope(TransactionScopeOption.RequiresNew,
@@ -270,8 +265,6 @@ namespace Demo.UnitTest
             var expectedPassword = "pass.123";
             var newUser2 = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
             var newUser3 = new UserEntity {Id = 3, Password = expectedPassword, IsActive = true};
-            var finalPasswordUser2 = string.Empty;
-            var finalPasswordUser3 = string.Empty;
 
             // action
             try
@@ -298,11 +291,13 @@ namespace Demo.UnitTest
             {
                 Console.WriteLine("transaction rollback!");
             }
+
             var repo = new MariaDbRepository();
             var users = repo.GetUsers().Where(u => u.Id == 2 || u.Id == 3).ToArray();
 
-            finalPasswordUser2 = users.FirstOrDefault(u => u.Id == 2)?.Password;
-            finalPasswordUser3 = users.FirstOrDefault(u => u.Id == 3)?.Password;
+            var finalPasswordUser2 = users.FirstOrDefault(u => u.Id == 2)?.Password;
+            var finalPasswordUser3 = users.FirstOrDefault(u => u.Id == 3)?.Password;
+
             // assert
             Assert.AreEqual(originPassword, finalPasswordUser2);
             Assert.AreEqual(originPassword, finalPasswordUser3);
@@ -316,8 +311,8 @@ namespace Demo.UnitTest
             var newProduct = new ProductEntity {Name = nameof(CreateProductShouldCorrect), Amount = 10, AccountId = 2};
             UserEntity insertedUser;
             ProductEntity insertedProduct;
-            int originUserCount = 0, tempUserCount = 0, finalUserCount = 0;
-            int originProductCount = 0, tempProductCount = 0, finalProductCount = 0;
+            int originUserCount, tempUserCount, finalUserCount;
+            int originProductCount, tempProductCount, finalProductCount;
 
             // action
             using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,

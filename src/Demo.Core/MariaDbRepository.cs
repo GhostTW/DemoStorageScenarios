@@ -10,14 +10,12 @@ namespace Demo.Core
     public class MariaDbRepository : IDisposable
     {
         private MySqlConnection _connection;
-        private MySqlTransaction _transaction;
 
         private readonly string _connectionString;
 
-        public MariaDbRepository(MySqlConnection mySqlConnection = null, MySqlTransaction transaction = null, string connectionString = null)
+        public MariaDbRepository(MySqlConnection mySqlConnection = null, string connectionString = null)
         {
             _connection = mySqlConnection;
-            _transaction = transaction;
             _connectionString = connectionString ?? "server=127.0.0.1;port=3326;user id=root;password=pass.123;database=TestDB;charset=utf8;";
         }
         
@@ -51,7 +49,7 @@ namespace Demo.Core
                     }
 
                     if ((int)parameter.Value == 0) // output parameters only be populated after the reader is closed.
-                        throw new Exception("failed to get users from mariadb.");
+                        throw new Exception("failed to get users from maria db.");
 
                     return result;
                 }
@@ -297,8 +295,8 @@ namespace Demo.Core
                 return Execute(_connection);
             }
         }
-        
-        bool disposed = false;
+
+        private bool _disposed;
         
         public void Dispose()
         { 
@@ -309,14 +307,14 @@ namespace Demo.Core
         // Protected implementation of Dispose pattern.
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return; 
       
             if (disposing) {
                 // Free any other managed objects here.
             }
       
-            disposed = true;
+            _disposed = true;
         }
 
         ~MariaDbRepository()
