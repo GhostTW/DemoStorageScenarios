@@ -1,4 +1,4 @@
-﻿namespace Demo.Data
+﻿namespace Demo.Core.Entities
 {
     public class UserEntity
     {

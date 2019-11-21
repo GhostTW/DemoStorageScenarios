@@ -3,7 +3,7 @@ using Demo.Core.Lua;
 using Demo.Data;
 using StackExchange.Redis;
 
-namespace Demo.Core
+namespace Demo.Core.Repositories
 {
     public class RedisRepository
     {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Demo.Core;
+using Demo.Core.Repositories;
 using Demo.Data;
 using NUnit.Framework;
 
-namespace Demo.UnitTest
+namespace Demo.Test
 {
     public class MongoDbRepositoryUnitTests
     {

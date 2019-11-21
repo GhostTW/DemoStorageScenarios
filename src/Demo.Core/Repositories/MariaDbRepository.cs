@@ -5,7 +5,7 @@ using System.Linq;
 using Demo.Data;
 using MySql.Data.MySqlClient;
 
-namespace Demo.Core
+namespace Demo.Core.Repositories
 {
     public class MariaDbRepository : IDisposable
     {

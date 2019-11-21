@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Demo.Data;
 using MongoDB.Driver;
 
-namespace Demo.Core
+namespace Demo.Core.Repositories
 {
     public class MongoDbRepository
     {

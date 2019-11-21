@@ -3,12 +3,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Demo.Core;
+using Demo.Core.Repositories;
 using Demo.Data;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 
-namespace Demo.UnitTest
+namespace Demo.Test
 {
     public class MariaDbRepositoryUnitTests
     {
