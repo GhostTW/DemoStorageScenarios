@@ -1,8 +1,8 @@
 CREATE USER IF NOT EXISTS 'dbowner'@'%' IDENTIFIED BY 'pass.123';
 GRANT All privileges ON *.* TO 'dbowner'@'%';
 
-CREATE DATABASE IF NOT EXISTS TestDB;
-USE TestDB;
+CREATE DATABASE IF NOT EXISTS TestDB1;
+USE TestDB1;
 
 -- User --
 

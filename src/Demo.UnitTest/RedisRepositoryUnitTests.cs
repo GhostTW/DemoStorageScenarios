@@ -7,7 +7,7 @@ namespace Demo.UnitTest
     public class RedisRepositoryUnitTests
     {
         [Test]
-        public void InsertUser_Should_Correct()
+        public void InsertUserShouldCorrect()
         {
             var actualResult = 0;
             var user = new UserEntity
@@ -16,12 +16,10 @@ namespace Demo.UnitTest
             var sut = new RedisRepository();
 
             Assert.DoesNotThrowAsync(async () => actualResult = await sut.InsertUser(user));
-
-            //Assert.AreEqual(1, actualResult);
         }
         
         [Test]
-        public void Test_Convert()
+        public void TestConvert()
         {
             var actualResult = 0;
             var sut = new RedisRepository();
@@ -32,7 +30,7 @@ namespace Demo.UnitTest
         }
         
         [Test]
-        public void Test_Table()
+        public void TestTable()
         {
             string[] actualResult = null;
             var sut = new RedisRepository();

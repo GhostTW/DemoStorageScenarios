@@ -36,7 +36,7 @@ namespace Demo.UnitTest
         }
         
         [Test]
-        public void InsertUsers_should_success()
+        public void InsertUsersShouldSuccess()
         {
             var users = new UserEntity[]
             {
@@ -50,7 +50,7 @@ namespace Demo.UnitTest
         }
         
         [Test]
-        public void GetAllUsers_should_success()
+        public void GetAllUsersShouldSuccess()
         {
             IEnumerable<UserEntity> actualResult = null;
             var sut = _dbRepository;
