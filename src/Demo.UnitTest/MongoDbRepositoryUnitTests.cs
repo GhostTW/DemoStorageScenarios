@@ -14,6 +14,12 @@ namespace Demo.UnitTest
         private MongoDbRepository _dbRepository;
         private Faker<UserEntity> _userGenerator;
 
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            // Since transaction is not allowed to create a collection, it's need to create at init.
+            new MongoDbRepository().InsertUser(new UserEntity { Id = 0, Code = "create", IsActive = true, Password = "pass.123" });
+        }
         [SetUp]
         public void SetUp()
         {
