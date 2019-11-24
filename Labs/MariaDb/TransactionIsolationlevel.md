@@ -22,6 +22,7 @@ UPDATE User SET IsActive = 0 WHERE Code = 'Admin';
 COMMIT;
 SELECT * FROM User;
 ```
+
 結果
 
 ![CommitResult](images/CommitResult.png)
@@ -58,6 +59,7 @@ SELECT @@TX_ISOLATION;
 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 SELECT @@TX_ISOLATION;
 ```
+
 ![CheckIsolationLevel](images/CheckIsolationLevel.png)
 
 ```sql
@@ -65,7 +67,7 @@ SELECT @@TX_ISOLATION;
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 # step 4 get current session working transaction.
-SELECT @@IN_TRANSACTION; 
+SELECT @@IN_TRANSACTION;
 ```
 
 ![CheckTransaction](images/CheckTransaction.png)
@@ -75,50 +77,60 @@ SELECT @@IN_TRANSACTION;
 在 MySqlWorkBench 開啟兩個 Session 連線至資料庫，使用不同的 isolation level 同時操作一樣的資料．
 Session B 更改資料，但在未送出 commit 前被 SessionA 使用 ReadUncommitted 讀到髒資料．
 
-* Step 1 Session A 
+* Step 1 Session A
+
 ```sql
 # step 1
 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 SELECT @@tx_isolation;
 SELECT * FROM User;
 ```
+
 ![IsolationLevel](images/ReadUncommitted.png)
 ![DefaultUsers](images/DefaultUsers.png)
 
 * Step 2 SessionB
 建立一個 transaction 但不結束，觀察另一個 session 的使用狀況．
+
 ```sql
 START TRANSACTION;
 UPDATE User SET IsActive = 0 WHERE Code = 'Admin';
 ```
 
-* Step 3 SessionA 
+* Step 3 SessionA
 讀取到尚未 commit 的資料.
+
 ```sql
 SELECT * FROM User WHERE Code = 'Admin;
 ```
+
 `IsActive: 0`
 
 * Step 4 SessionA
 改變 SessionA 的 isolation level 驗證該交易只能拿到 committed 過的資料．
+
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT @@tx_isolation;
 SELECT * FROM User WHERE Code = 'Admin;
 ```
+
 `IsActive: 1`
 
 * Step 5 SessionB
 將 transaction commit 送出
+
 ```sql
 COMMIT;
 ```
 
 * Step 6 SessionA get committed data.
 SessionA 會取得 commit 後的資料．
+
 ```sql
 SELECT * FROM User WHERE Code = 'Admin;
 ```
+
 `IsActive: 0`
 
 ## 04 NonRepeatable Read
@@ -133,29 +145,35 @@ SELECT @@tx_isolation;
 START TRANSACTION;
 SELECT * FROM User;
 ```
+
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
 
 * Step 2 SessionB
+
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '0' WHERE Code = 'Test001';
 COMMIT;
 ```
+
 `Password: 0`
 
 * Step 3 SessionA
 更新時與第一次不一樣的值，結果仍是 SessionB 改的 0
+
 ```sql
 SELECT * FROM User;
 COMMIT;
 SELECT * FROM User;
 ```
+
 commit 前第二次讀取會取到被更改的值．
 `Password: 0`
 `Password: 0`
 
 * Step 4 SessionA
 使用 REPEATABLE READ 防止此情況發生
+
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 SELECT @@tx_isolation;
@@ -163,23 +181,28 @@ UPDATE User SET Password = '1E867FA1A3A64AB5E1EE21BD76F05912' WHERE Code = 'Test
 START TRANSACTION;
 SELECT * FROM User;
 ```
+
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
 
 * Step 5 SessionB
+
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '1' WHERE Code = 'Test001';
 COMMIT;
 SELECT * FROM User;
 ```
+
 `Password: 1`
 
 * Step 6 SessionA
+
 ```sql
 SELECT * FROM User;、
 COMMIT;
 SELECT * FROM User;
 ```
+
 commit 前第二次讀取會取到跟第一次一樣的值．
 
 `Password: 1E867FA1A3A64AB5E1EE21BD76F05912`
@@ -195,6 +218,7 @@ SELECT * FROM User LOCK IN SHARE MODE;
 ```
 
 * Step 8 SessionB
+
 ```sql
 START TRANSACTION;
 UPDATE User SET Password = '1' WHERE Code = 'Test001';
@@ -202,15 +226,18 @@ COMMIT;
 ```
 
 * Step 9 SessionA
+
 ```sql
 COMMIT;
 ```
 
 ## 05 Phantom Read
+
 當兩個交易進行時，Ｂ交易對資料做新增或刪除時，Ａ交易不會知道有關新增刪除的資料．
 
 * Step 1 SessionA
 原始資料有三筆
+
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 SELECT @@tx_isolation;
@@ -222,6 +249,7 @@ SELECT * FROM User;
 
 * Step 2 SessionB
 新增一筆資料
+
 ```sql
 START TRANSACTION;
 INSERT INTO User VALUES(4,'testP0', '1E867FA1A3A64AB5E1EE21BD76F05912', 1);
@@ -230,6 +258,7 @@ COMMIT;
 
 * Step 3 SessionA
 仍是取到三筆資料
+
 ```sql
 SELECT * FROM User;
 COMMIT;
@@ -237,6 +266,7 @@ COMMIT;
 
 * Step 4 SessionA
 使用 Serialiazable
+
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 SELECT @@tx_isolation;
@@ -246,6 +276,7 @@ SELECT * FROM User;
 
 * Step 5 SessionB
 新增一筆資料，但因為是 Serializable 進入等待．
+
 ```sql
 START TRANSACTION;
 INSERT INTO User VALUES(5, 'testP1', '1E867FA1A3A64AB5E1EE21BD76F05912', 1);
@@ -255,6 +286,7 @@ SELECT * FROM User;
 
 * Step 6 SessionA
 結束 transaction 後，交易 B 才將資料新增進去．
+
 ```sql
 COMMIT;
 SELECT * FROM User;
