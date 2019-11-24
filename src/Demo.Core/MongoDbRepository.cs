@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Demo.Data;
 using MongoDB.Driver;
@@ -37,11 +38,25 @@ namespace Demo.Core
             collection.InsertMany(users);
         }
         
-        public IEnumerable<UserEntity> GetAllUsers()
+        public List<UserEntity> GetAllUsers()
         {
             var collection = GetUserCollection();
 
-            return collection.Find(_ => true).ToEnumerable();
+            return collection.Find(_ => true).ToList();
+        }
+
+        public List<UserEntity> FindUsers(int? id = null, string code = null)
+        {
+            if (!id.HasValue && string.IsNullOrEmpty(code))
+                throw new ArgumentNullException("must have one parameter.");
+
+            var collection = GetUserCollection();
+            IFindFluent<UserEntity, UserEntity> query = null;
+            if (id.HasValue)
+                query = collection.Find(u => u.Id == id);
+            if (!string.IsNullOrEmpty(code))
+                query = collection.Find(u => u.Code == code);
+            return query.ToList();
         }
 
         public void DropUserCollection()
