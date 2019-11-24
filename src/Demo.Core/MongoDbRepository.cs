@@ -8,7 +8,7 @@ namespace Demo.Core
     public class MongoDbRepository
     {
         public readonly MongoClient Connection;
-        private const string ConnectionString = "mongodb://127.0.0.1:27017/TestDB?retryWrites=false";
+        private const string ConnectionString = "mongodb://127.0.0.1:27017/TestDB";
         private const string DatabaseName = "TestDB";
         private const string CollectionName = "Users";
         private IClientSessionHandle _session;
