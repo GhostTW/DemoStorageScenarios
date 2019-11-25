@@ -85,6 +85,7 @@ public void GetUserShouldCorrect()
 ## Transaction Commit, Rollback 的使用
 
 這個例子使用 connection transaction 去實現 Rollback 的功能．
+
 1. 準備一筆要塞入的資料
 2. 開啟 transaction
 3. 新增資料
@@ -125,6 +126,7 @@ public void CreateUserRollbackShouldCorrect()
 ```
 
 ## TransactionScope
+
 測試一個交易對不同 connection 操作的 rollback
 對 User, Product 開啟不同的連線，各新增一筆資料，最後在一次 rollback 驗證資料是否跟新增前相同．
 
@@ -172,7 +174,7 @@ public void InsertUserAndProductRollback()
 }
 ```
 
-## TranasctionScope NestedScope
+## TransactionScope NestedScope
 
 Transaction Scope 支援巢狀 Scope，以下範例為兩層 Scope 內層 Scope 失敗，外層本來成功但因為內層失敗也跟著失敗．
 

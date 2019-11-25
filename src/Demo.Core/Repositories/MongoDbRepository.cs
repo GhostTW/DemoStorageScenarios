@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Demo.Data;
 using MongoDB.Driver;
@@ -6,20 +7,29 @@ namespace Demo.Core.Repositories
 {
     public class MongoDbRepository
     {
-        private readonly MongoClient _connection;
+        public readonly MongoClient Connection;
         private const string ConnectionString = "mongodb://127.0.0.1:27017";
         private const string DatabaseName = "TestDB";
         private const string CollectionName = "Users";
+        private IClientSessionHandle _session;
 
         public MongoDbRepository()
         {
-            _connection = new MongoClient(ConnectionString);
+            Connection = new MongoClient(ConnectionString);
+        }
+
+        public void SetSession(IClientSessionHandle session)
+        {
+            _session = session;
         }
 
         public void InsertUser(UserEntity user)
         {
             var collection = GetUserCollection();
-            collection.InsertOne(user);
+            if(_session !=null)
+                collection.InsertOne(_session, user);
+            else
+                collection.InsertOne(user);
         }
 
         public void InsertUsers(IEnumerable<UserEntity> users)
@@ -28,11 +38,25 @@ namespace Demo.Core.Repositories
             collection.InsertMany(users);
         }
         
-        public IEnumerable<UserEntity> GetAllUsers()
+        public List<UserEntity> GetAllUsers()
         {
             var collection = GetUserCollection();
 
-            return collection.Find(_ => true).ToEnumerable();
+            return collection.Find(_ => true).ToList();
+        }
+
+        public List<UserEntity> FindUsers(int? id = null, string code = null)
+        {
+            if (!id.HasValue && string.IsNullOrEmpty(code))
+                throw new ArgumentNullException("must have one parameter.");
+
+            var collection = GetUserCollection();
+            IFindFluent<UserEntity, UserEntity> query = null;
+            if (id.HasValue)
+                query = collection.Find(u => u.Id == id);
+            if (!string.IsNullOrEmpty(code))
+                query = collection.Find(u => u.Code == code);
+            return query.ToList();
         }
 
         public void DropUserCollection()
@@ -41,7 +65,7 @@ namespace Demo.Core.Repositories
             database.DropCollection(CollectionName);
         }
 
-        private IMongoDatabase GetDatabase() => _connection.GetDatabase(DatabaseName);
+        private IMongoDatabase GetDatabase() => _session != null ? _session.Client.GetDatabase(DatabaseName) : Connection.GetDatabase(DatabaseName);
 
         private IMongoCollection<UserEntity> GetUserCollection() =>
             GetDatabase().GetCollection<UserEntity>(CollectionName);
