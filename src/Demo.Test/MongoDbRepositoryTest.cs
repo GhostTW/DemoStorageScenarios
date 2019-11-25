@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
+using Demo.Core.Entities;
 using Demo.Core.Repositories;
-using Demo.Data;
 using NUnit.Framework;
 
 namespace Demo.Test

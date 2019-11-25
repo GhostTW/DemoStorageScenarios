@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Demo.Core.Entities;
 using Demo.Core.Lua;
-using Demo.Data;
 using StackExchange.Redis;
 
 namespace Demo.Core.Repositories

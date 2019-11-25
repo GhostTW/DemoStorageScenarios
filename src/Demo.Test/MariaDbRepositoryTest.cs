@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using Demo.Core.Entities;
 using Demo.Core.Repositories;
-using Demo.Data;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 

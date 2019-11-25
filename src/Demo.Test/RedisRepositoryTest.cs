@@ -1,5 +1,5 @@
+using Demo.Core.Entities;
 using Demo.Core.Repositories;
-using Demo.Data;
 using NUnit.Framework;
 
 namespace Demo.Test

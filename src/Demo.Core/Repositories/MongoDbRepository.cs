@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Demo.Data;
+using Demo.Core.Entities;
 using MongoDB.Driver;
 
 namespace Demo.Core.Repositories

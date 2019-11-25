@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Demo.Data;
+using Demo.Core.Entities;
 using MySql.Data.MySqlClient;
 
 namespace Demo.Core.Repositories
