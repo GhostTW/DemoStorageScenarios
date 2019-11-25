@@ -280,11 +280,59 @@ namespace Demo.Test
                     {
                         var userRepoB = new MariaDbRepository();
                         userRepoB.UpdateUser(newUser3);
-
+                        
                         //unused.Complete();
                     }
 
                     transactionScope.Complete();
+                }
+            }
+            catch (TransactionAbortedException)
+            {
+                Console.WriteLine("transaction rollback!");
+            }
+
+            var repo = new MariaDbRepository();
+            var users = repo.GetUsers().Where(u => u.Id == 2 || u.Id == 3).ToArray();
+
+            var finalPasswordUser2 = users.FirstOrDefault(u => u.Id == 2)?.Password;
+            var finalPasswordUser3 = users.FirstOrDefault(u => u.Id == 3)?.Password;
+
+            // assert
+            Assert.AreEqual(originPassword, finalPasswordUser2);
+            Assert.AreEqual(originPassword, finalPasswordUser3);
+        }
+
+        [Test]
+        [Ignore("Nested transactions are not supported.")]
+        public void NestedScopeInnerTransactionRollbackShouldRollback()
+        {
+            // arrange
+            var originPassword = "1E867FA1A3A64AB5E1EE21BD76F05912";
+            var expectedPassword = "pass.123";
+            var newUser2 = new UserEntity {Id = 2, Password = expectedPassword, IsActive = true};
+            var newUser3 = new UserEntity {Id = 3, Password = expectedPassword, IsActive = true};
+
+            // action
+            try
+            {
+                using (new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions {IsolationLevel = IsolationLevel.ReadCommitted},
+                    TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var userRepoA = new MariaDbRepository();
+                    userRepoA.UpdateUser(newUser2);
+
+                    using (var connection = new MySqlConnection(ConnectionString))
+                    {
+                        connection.Open();
+                        using (var transaction = connection.BeginTransaction())
+                        {
+                            var userRepoB = new MariaDbRepository(connection);
+                            userRepoB.UpdateUser(newUser3);
+                            transaction.Rollback();
+                        }
+                    }
                 }
             }
             catch (TransactionAbortedException)
